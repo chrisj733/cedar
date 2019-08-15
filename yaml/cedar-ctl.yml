@@ -59,7 +59,7 @@ spec:
       hostNetwork: true
       serviceAccount: sas-adxr-cedar
       containers:
-        - image: {{ configmap.container_registry }}/infra-dev/adx/sas-adxr-cedar:{{ this.keepalived.version }}
+        - image: harbor.unx.sas.com/infra-dev/adx/cedar:dev 
           name: sas-adxr-cedar
           imagePullPolicy: Always
           securityContext:
