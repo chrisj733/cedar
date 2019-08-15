@@ -1,0 +1,132 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sas-adxr-cedar
+  namespace: sas-adxr-system 
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: sas-adxr-kube-cedar
+  namespace: sas-adxr-system
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - pods
+    - nodes
+    - endpoints
+    - services
+    - configmaps
+    verbs: ["*"] 
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: sas-adxr-cedar
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sas-adxr-cedar
+subjects:
+- kind: ServiceAccount
+  name: sas-adxr-cedar
+  namespace: sas-adxr-system
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sas-adxr-cedar
+  namespace: sas-adxr-system
+data:
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: sas-adxr-cedar
+  namespace: sas-adxr-system
+  labels:
+    tier: node
+    k8s-app: sas-adxr-cedar
+spec:
+  template:
+    metadata:
+      labels:
+        tier: node
+        k8s-app: sas-adxr-cedar
+    spec:
+      hostNetwork: true
+      serviceAccount: sas-adxr-cedar
+      containers:
+        - image: {{ configmap.container_registry }}/infra-dev/adx/sas-adxr-cedar:{{ this.keepalived.version }}
+          name: sas-adxr-cedar
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /lib/modules
+              name: modules
+              readOnly: true
+            - mountPath: /dev
+              name: dev
+            - mountPath: /etc/config
+              name: config-volume
+          # use downward API
+          env:
+            - name: POAC_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: plat-svcs-env
+                  key: poac_version
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          # to use unicast
+          args:
+          # unicast uses the ip of the nodes instead of multicast
+          # this is useful if running in cloud providers (like AWS)
+          #- --use-unicast=true
+          # vrrp version can be set to 2.  Default 3.
+          #- --vrrp-version=2
+      volumes:
+        - name: modules
+          hostPath:
+            path: /lib/modules
+        - name: dev
+          hostPath:
+            path: /dev
+        - name: config-volume
+          configMap:
+            name: cm-config
+      #nodeSelector:
+      #  type: worker
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: sas-adxr-cedar-psp
+roleRef:
+  kind: ClusterRole
+  name: sas-adxr-cedar-psp
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: sas-adxr-cedar
+  namespace: sas-adxr-system
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: sas-adxr-cedar-psp
+rules:
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs: ['use']
+  resourceNames: ['wide-open']
+

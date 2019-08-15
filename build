@@ -1,0 +1,1 @@
+docker build -t docker.sas.com/infra-dev/adx/sas-adxr-cedar:dev .
