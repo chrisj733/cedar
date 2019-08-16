@@ -32,7 +32,7 @@ daytimer=0
 #Create the SymLinks and configuration directory for docker.  The symlink will be created from our transported harbor-creds (see the yaml)
 
 mkdir /root/.docker
-ln -s /etc/secret/.dockerconfigjson /root/.docker/config.json
+ln -s /etc/secret/.docker/config.json /root/.docker/config.json
 
 #Start a sibling docker instance and sleep 15m before launching again
 
