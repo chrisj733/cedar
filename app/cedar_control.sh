@@ -42,12 +42,13 @@ then
 fi
 
 while [ $DOCKER_REACH -a $HARBOR_REACH ] ; do
-  echo 'Attempting Docker Pull from: Docker.sas.com'
-  docker pull docker.sas.com/infra-dev/adx/poac:$revver
   echo 'Attempting Docker Pull from: harbor.unx.sas.com'
-  docker pull harbor.unx.sas.com/infra-dev/adx/poac:$revver
-  docker pull harbor.unx.sas.com/infra-dev/adx/jupyterlab
-  docker pull harbor.unx.sas.com/infra-dev/adx/poac:duke
+  for i in $CUSTOMER_IMAGES 
+  do
+    echo "Attempting Pull from $i"
+    docker pull $i 
+  done
+  
   echo 'Sleeping 900 seconds'
   sleep 900
   echo "Total Daily Run Time = $daytimer"
