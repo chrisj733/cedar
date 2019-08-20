@@ -1,12 +1,28 @@
 #!/bin/bash
 
-#you can get the poac version from kubectl, but that's unavailable on worker nodes.  Instead, we're going to pull the variable in the config yaml and 
-#carry it as an OS variable
-#revver=$(kubectl get cm plat-svcs-env -o json -n plat-svcs | grep poac_version | sed 's/"//g'| sed 's/,//g' | awk '{print $2}')
+#Create the SymLinks and configuration directory for docker.  The symlink will be created from our transported harbor-creds (see the deployment yaml)
 
-revver=$POAC_VERSION
+mkdir /root/.docker
+ln -s /etc/secret/.dockerconfigjson /root/.docker/config.json
 
-echo "Retrieving Version:  $revver"
+daytimer=0
+
+while true
+do
+
+
+# Step 1, retreive the manifests in use.  This has changed quite a bit, but this seems to be the best way for now:
+
+mapfile -t image_array < <(kubectl get rs --all-namespaces -o yaml | grep 'harbor.unx.sas.com' | grep -oP '(?<=image: ).*' )
+
+# Step 2, sort this highly redundant array
+
+sorted_image_array=($(echo "${image_array[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+
+# Now we have our target array, we can go to work.
+
+echo Printing Current Image List:
+echo ${sorted_image_array[@]}
 
 # test for repo availability before we try and pull anything down
 /usr/bin/curl --silent --connect-timeout 3 https://docker.sas.com > /dev/null
@@ -27,37 +43,30 @@ else
   HARBOR_REACH=FALSE
 fi
 
-daytimer=0
 
-#Create the SymLinks and configuration directory for docker.  The symlink will be created from our transported harbor-creds (see the yaml)
-
-mkdir /root/.docker
-ln -s /etc/secret/.docker/config.json /root/.docker/config.json
-
-#Start a sibling docker instance and sleep 15m before launching again
+# Step 3, if the repos are up, let's go out and do our fetching fetch.  After 20 runs we'll do a system prune.
 
 if [ $DOCKER_REACH -a $HARBOR_REACH ]; 
-then
+ then
    echo 'Repos are Available, Beginning Control Loop'
-fi
-
-while [ $DOCKER_REACH -a $HARBOR_REACH ] ; do
-  echo 'Attempting Docker Pull from: harbor.unx.sas.com'
-  for i in $CUSTOMER_IMAGES 
-  do
+   echo 'Attempting Docker Pull from: harbor.unx.sas.com'
+   for i in ${sorted_image_array[@]}
+   do
     echo "Attempting Pull from $i"
     docker pull $i 
-  done
+   done
   
-  echo 'Sleeping 900 seconds'
-  sleep 900
-  echo "Total Daily Run Time = $daytimer"
-  daytimer+=900 
-  # Increment day timer until a day is reached.  Then, do a deep system prune
-  if (daytimer -ge 86400); then
-     echo "Daily Timer has reached $daytimer, beginning system prune"
-     docker system prune --filter "until=72h" --filter=label=maintainer="PDT <pdt@wnt.sas.com>"
-     echo "Prune Complete, resetting..."
-     daytimer=0
-  fi
+   echo 'Sleeping a few seconds'
+   sleep 3600
+   echo "Total Daily Run Time = $daytimer"
+   daytimer+=1 
+   # Increment day timer until a day is reached.  Then, do a deep system prune
+   if (daytimer -ge 20); then
+      echo "RunTimer has reached $daytimer, beginning system prune"
+      docker system prune --filter "until=72h" --filter=label=maintainer="PDT <pdt@wnt.sas.com>"
+      echo "Prune Complete, resetting..."
+      daytimer=0
+   fi
+fi
+
 done
