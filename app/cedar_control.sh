@@ -13,7 +13,11 @@ do
 
 # Step 1, retreive the manifests in use.  This has changed quite a bit, but this seems to be the best way for now:
 
-mapfile -t image_array < <(kubectl get rs --all-namespaces -o yaml | grep 'harbor.unx.sas.com' | grep -oP '(?<=image: ).*' )
+mapfile -t image_array1 < <(kubectl get rs --all-namespaces -o yaml | grep 'harbor.unx.sas.com' | grep -oP '(?<=image: ).*' )
+mapfile -t image_array2 < <(kubectl get rs --all-namespaces -o yaml | grep 'docker.sas.com' | grep -oP '(?<=image: ).*' )
+mapfile -t image_array3 < <(kubectl get deployment --all-namespaces -o yaml | grep 'harbor.unx.sas.com' | grep -oP '(?<=image: ).*' )
+
+image_array=( "${image_array1[@]}" "${image_array2[@]}" "${image_array3[@]}" )
 
 # Step 2, sort this highly redundant array
 
@@ -25,13 +29,13 @@ echo Printing Current Image List:
 echo ${sorted_image_array[@]}
 
 # test for repo availability before we try and pull anything down
-/usr/bin/curl --silent --connect-timeout 3 https://docker.sas.com > /dev/null
+/usr/bin/curl --silent --connect-timeout 3 https://registry.unx.sas.com > /dev/null
 if [ $? -eq 0 ]; then
-  echo 'Repo docker.sas.com is available'
-  DOCKER_REACH=TRUE
+  echo 'Repo registry.unx.sas.com is available'
+  REGISTRY_REACH=TRUE
 else
-  echo 'unable to connect to docker.sas.com'
-  DOCKER_REACH=FALSE
+  echo 'unable to connect to registry.unx.sas.com'
+  REGISTRY_REACH=FALSE
 fi
 
 /usr/bin/curl --silent --connect-timeout 3 https://harbor.unx.sas.com > /dev/null
@@ -46,7 +50,7 @@ fi
 
 # Step 3, if the repos are up, let's go out and do our fetching fetch.  After 20 runs we'll do a system prune.
 
-if [ $DOCKER_REACH -a $HARBOR_REACH ]; 
+if [ $REGISTRY_REACH -a $HARBOR_REACH ]; 
  then
    echo 'Repos are Available, Beginning Control Loop'
    echo 'Attempting Docker Pull from: harbor.unx.sas.com'
