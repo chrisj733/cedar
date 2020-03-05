@@ -16,8 +16,9 @@ do
 mapfile -t image_array1 < <(kubectl get rs --all-namespaces -o yaml | grep 'harbor.unx.sas.com' | grep -oP '(?<=image: ).*' )
 mapfile -t image_array2 < <(kubectl get rs --all-namespaces -o yaml | grep 'docker.sas.com' | grep -oP '(?<=image: ).*' )
 mapfile -t image_array3 < <(kubectl get deployment --all-namespaces -o yaml | grep 'harbor.unx.sas.com' | grep -oP '(?<=image: ).*' )
+mapfile -t image_array4 < <(kubectl get deployment --all-namespaces -o yaml | grep 'registry.unx.sas.com' | grep -oP '(?<=image: ).*' )
 
-image_array=( "${image_array1[@]}" "${image_array2[@]}" "${image_array3[@]}" )
+image_array=( "${image_array1[@]}" "${image_array2[@]}" "${image_array3[@]}" "${image_array4[@]}" )
 
 # Step 2, sort this highly redundant array
 
