@@ -1,9 +1,13 @@
 #!/bin/bash
 
-#Create the SymLinks and configuration directory for docker.  The symlink will be created from our transported harbor-creds (see the deployment yaml)
+# Create the SymLinks and configuration directory for docker.  The symlink will be 
+# created from our transported harbor-creds (see the deployment yaml)
 
-mkdir /root/.docker
-ln -s /etc/secret/.dockerconfigjson /root/.docker/config.json
+#mkdir /root/.docker
+#ln -s /etc/secret/.dockerconfigjson /root/.docker/config.json
+
+echo "docker config:"
+cat /root/.docker/config.json
 
 daytimer=0
 
