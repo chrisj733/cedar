@@ -1,4 +1,4 @@
-FROM registry.unx.sas.com/vendor/docker.io/library/alpine:3.11.5 as base
+FROM registry.unx.sas.com/vendor/docker.io/library/alpine:3.11.6 as base
 
 # Bash for Scripting
 # Grep to pick up latest experimental inverse regex / perl matching
