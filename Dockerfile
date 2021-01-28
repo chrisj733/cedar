@@ -12,8 +12,6 @@ RUN apk --no-cache add \
 
 
 
-# Tell docker that all future commands should run as the appuser user
-
 
 RUN curl -o /bin/kubectl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
 RUN chmod 777 /bin/kubectl
@@ -27,5 +25,9 @@ RUN chmod 755 /app/cedar_control.sh
 RUN mkdir /app/.docker; \
     ln -s /etc/secret/.dockerconfigjson /app/.docker/config.json
 
+
+#RUN groupadd --non-unique --gid 23456 cedargroup
+RUN addgroup -S cedargroup && adduser -S cedaruser -G cedargroup
+USER cedaruser
 
 ENTRYPOINT /app/start.sh

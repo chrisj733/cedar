@@ -21,6 +21,8 @@ N/A
 No health monitors are included at this time.
 
 ## Functional accounts used ##
+This service uses a Vanguard API account capable of modifying deployments
+ADX Account: cedar-controller
 
 ## Upgrade Process ##
 Standard k8s container update process.
@@ -29,17 +31,15 @@ Standard k8s container update process.
 Scaling is not supported for this service.
 
 ## Process to deploy component ##
-##   ?   ## 
-https://gitlab.sas.com/adx/cedar/cedar-deploy.yaml
+Deployed using the std kubectl diff methods located at:
+https://gitlab.sas.com/adx/ac-cluster/-/tree/master/k8s/sas-adxr-system/09-cedar
+
 
 ## List of functions/tasks performed ##
-* Retreive the current image versions
-* Sort image list and dedup
-* Test connectivity to harbor and docker repos
+* Retreive the current POAC version 
 * Retrieve updated repos if applicable 
 
 ## Steps to complete tasks manually ##
 * Retreive the current POAC version
-* Test connectivity to harbor and docker repos
 * Retrieve updated repos if applicable
 
