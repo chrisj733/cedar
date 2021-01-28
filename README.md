@@ -6,7 +6,7 @@ Chris Johnson <chris.johnson@sas.com>
 Tom Georgoulias <tom.georgoulias@sas.com>
 
 ## Code Location ##
-https://gitlab.sas.com/infra-dev/vanguard-control-loops/tree/master/cedar
+https://gitlab.sas.com/adx/cedar
 
 ## Inter-dependent services ##
 * Access to docker command
@@ -21,8 +21,6 @@ N/A
 No health monitors are included at this time.
 
 ## Functional accounts used ##
-This service uses a Vanguard API account capable of modifying deployments
-ADX Account: cedar-controller
 
 ## Upgrade Process ##
 Standard k8s container update process.
@@ -32,10 +30,11 @@ Scaling is not supported for this service.
 
 ## Process to deploy component ##
 ##   ?   ## 
-https://gitlab.sas.com/infra-dev/vanguard-control-loops/raw/master/config/kubernetes/cedar-ctl.yml
+https://gitlab.sas.com/adx/cedar/cedar-deploy.yaml
 
 ## List of functions/tasks performed ##
-* Retreive the current POAC version 
+* Retreive the current image versions
+* Sort image list and dedup
 * Test connectivity to harbor and docker repos
 * Retrieve updated repos if applicable 
 
