@@ -1,6 +1,6 @@
 
 
-TAG=v.1.1.0
+TAG=v1.1.0
 REGISTRY=${DOCKER_REGISTRY:-registry.sas.com}
 
 IMAGE_PATH="infra-dev/adx/cedar"

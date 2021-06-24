@@ -7,6 +7,7 @@ FROM registry.unx.sas.com/vendor/docker.io/library/alpine:3.13.0 as base
 RUN apk --no-cache add \
    bash \
    curl \
+   openssl \
    docker \
    grep
 
@@ -26,7 +27,6 @@ RUN mkdir /app/.docker; \
     ln -s /etc/secret/.dockerconfigjson /app/.docker/config.json
 
 
-#RUN groupadd --non-unique --gid 23456 cedargroup
 RUN addgroup -S cedargroup && adduser -S cedaruser -G cedargroup
 USER cedaruser
 
